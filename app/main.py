@@ -13,6 +13,6 @@ if command == ".dbinfo":
         page_size = int.from_bytes(database_file.read(2), byteorder="big")
         database_file.seek(103)
         table_amt = int.from_bytes(database_file.read(2), byteorder="big")
-        print(f"database page size: {page_size}\number of tables: {table_amt}")
+        print(f"database page size: {page_size}\nnumber of tables: {table_amt}")
 else:
     print(f"Invalid command: {command}")
