@@ -41,14 +41,11 @@ def parse_record_body(srl_type,file):
         return file.read(datalen).decode()
     elif srl_type >= 13 and srl_type%2==1:
         datalen = (srl_type-13)//2
-        print("TEXT LEN:",datalen)
         return file.read(datalen).decode()
     else:
         print("INVALID SERIAL TYPE")
         return None
     
-    
-
 def parse_cell(c_ptr,file):
     database_file.seek(c_ptr)
     payload_size = read_varint(file)
@@ -59,10 +56,10 @@ def parse_cell(c_ptr,file):
     format_body_start = format_hdr_start+format_hdr_sz
     while file.tell() < format_body_start:
         serial_types.append(read_varint(file))
-    record = []
+    records = []
     for srl_type in serial_types:
-        record.append(parse_record_body(srl_type,file))
-    return record
+        records.append(parse_record_body(srl_type,file))
+    return records
     
 
 if command == ".dbinfo":
@@ -81,6 +78,21 @@ elif command == ".tables":
         records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
         tbl_names = [rcd[2] for rcd in records if rcd[2] != "sqlite_sequence"]
         print(*tbl_names)
-        
+elif command.lower().startwith("select"):
+    query = command.lower().split()
+    tbl_name = query[-1]
+    with open(database_file_path, "rb") as database_file:
+        database_file.seek(16)
+        page_size = int.from_bytes(database_file.read(2), byteorder="big")
+        database_file.seek(103)
+        cell_amt = read_int(database_file,2)
+        database_file.seek(108)
+        cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
+        records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
+        tbls_info = {rcd[2]:rcd[3] for rcd in records if rcd[2] != "sqlite_sequence"]}
+        tbl_rtpage = tbls_info[tbl_name]
+        database_file.seek((tbl_rtpage-1)*page_size)+3))
+        table_cell_amt = read_int(database_file,2)
+        print(table_cell_amt)
 else:
     print(f"Invalid command: {command}")
