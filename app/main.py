@@ -91,7 +91,7 @@ elif command.lower().startwith("select"):
         records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
         tbls_info = {rcd[2]:rcd[3] for rcd in records if rcd[2] != "sqlite_sequence"}
         tbl_rtpage = tbls_info[tbl_name]
-        database_file.seek((tbl_rtpage-1)*page_size)+3))
+        database_file.seek(((tbl_rtpage-1)*page_size)+3)
         table_cell_amt = read_int(database_file,2)
         print(table_cell_amt)
 else:
