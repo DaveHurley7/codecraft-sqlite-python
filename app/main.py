@@ -41,6 +41,7 @@ def parse_record_body(srl_type,file):
         return file.read(datalen).decode()
     elif srl_type >= 13 and srl_type%2==1:
         datalen = (srl_type-13)/2
+        print("TEXT LEN:",datalen)
         return file.read(datalen).decode()
     else:
         print("INVALID SERIAL TYPE")
