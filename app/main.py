@@ -78,7 +78,7 @@ elif command == ".tables":
         records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
         tbl_names = [rcd[2] for rcd in records if rcd[2] != "sqlite_sequence"]
         print(*tbl_names)
-elif command.lower().startwith("select"):
+elif command.lower().startswith("select"):
     query = command.lower().split()
     tbl_name = query[-1]
     with open(database_file_path, "rb") as database_file:
