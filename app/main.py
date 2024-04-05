@@ -89,7 +89,7 @@ elif command.lower().startswith("select"):
         database_file.seek(108)
         cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
         records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
-        tbl_info = {rcd[3:] for rcd in records if rcd[2] == p_query.table}
+        tbl_info = [rcd[3:] for rcd in records if rcd[2] == p_query.table]
         tbl_rtpage = tbl_info[0]
         mktbl_query = sp.parse(tbl_info[1].lower())
         
