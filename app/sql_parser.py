@@ -47,7 +47,7 @@ class TokenStream:
         return False
     
     def skip_unneeded_tokens(self):
-        print("TOKENS":self.stream[self.idx:])
+        print("TOKENS:",self.stream[self.idx:])
         if not self.has_next():
             raise NoTokenFoundError
         while self.stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,"]:
