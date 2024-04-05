@@ -97,6 +97,8 @@ def parse(sql_str):
                 raise KeywordUsedAsTableNameError
             p_query.table = tbl_name
         elif "create" == token:
+            if p_query.has_action():
+                raise QueryActionAlreadySetError
             p_query.action = SQLAction.CREATE
             if token_stream.get_next() != "table":
                 raise InvalidQuerySyntaxError("Create keyword must be followed by this keyword: table")
@@ -112,7 +114,7 @@ def parse(sql_str):
                 token_stream.skip_unneeded_tokens()
                 if data_type.endswith(","):
                     data_type = data_type[:-1]
-                col_names.append(col_name)
-                col_dtypes.append(data_type)
+                p_query.col_names.append(col_name)
+                p_query.col_dtypes.append(data_type)
     return p_query
             
