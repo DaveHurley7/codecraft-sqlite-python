@@ -75,7 +75,7 @@ def parse(sql_str):
             col_name = token_stream.get_next()
             if col_name == "*":
                 p_query.all_cols = True
-            elif col_name = "count(*)":
+            elif col_name == "count(*)":
                 count_cols = True
             else:
                 col_names = []
