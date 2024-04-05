@@ -108,7 +108,7 @@ elif command.lower().startswith("select"):
             results = [[r[col_idx] for col_idx in col_idxs] for r in records]
             for res in results:
                 last_sep = len(res)-1
-                for col, i in enumerate(res):
+                for i, col in enumerate(res):
                     print(col,sep="|" if i < last_sep else "", end="")
                 print()
         
