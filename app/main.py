@@ -101,11 +101,16 @@ elif command.lower().startswith("select"):
             database_file.seek(page_offset+8)
             cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
             records = [parse_cell(page_offset+cell_ptr,database_file) for cell_ptr in cell_ptrs]
-            col_name = p_query.col_names[0]
-            col_idx = mktbl_query.col_names.index(col_name)
+            col_idxs = []
+            for col in p_query.col_names:
+                col_idxs.append(mktbl_query.col_names.index(col))
 
-            results = [r[col_idx] for r in records]
+            results = [[r[col_idx] for col_idx in col_idxs] for r in records]
             for res in results:
-                print(res)
+                last_sep = len(res)-1
+                for col, i in enumerate(res):
+                    print(col,sep="|" if i < last_sep else "", end="")
+                print()
+        
 else:
     print(f"Invalid command: {command}")
