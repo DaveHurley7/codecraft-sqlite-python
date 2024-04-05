@@ -1,4 +1,5 @@
 import sys
+import sql_parser as sp
 
 from dataclasses import dataclass
 
@@ -79,8 +80,7 @@ elif command == ".tables":
         tbl_names = [rcd[2] for rcd in records if rcd[2] != "sqlite_sequence"]
         print(*tbl_names)
 elif command.lower().startswith("select"):
-    query = command.lower().split()
-    tbl_name = query[-1]
+    p_query = sp.parse(command.lower())
     with open(database_file_path, "rb") as database_file:
         database_file.seek(16)
         page_size = int.from_bytes(database_file.read(2), byteorder="big")
@@ -89,10 +89,21 @@ elif command.lower().startswith("select"):
         database_file.seek(108)
         cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
         records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
-        tbls_info = {rcd[2]:rcd[3] for rcd in records if rcd[2] != "sqlite_sequence"}
-        tbl_rtpage = tbls_info[tbl_name]
-        database_file.seek(((tbl_rtpage-1)*page_size)+3)
-        table_cell_amt = read_int(database_file,2)
-        print(table_cell_amt)
+        tbl_info = {rcd[3:] for rcd in records if rcd[2] == p_query.table}
+        tbl_rtpage = tbl_info[0]
+        mktbl_query = sp.parse(tbl_info[1].lower())
+        
+        page_offset = (tbl_rtpage-1)*page_size
+        database_file.seek(page_offset+3)
+        cell_amt = read_int(database_file,2)
+        database_file.seek(page_offset+8)
+        cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
+        records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
+        col_name = p_query.col_names[0]
+        col_idx = mktbl_query.index(col_name)
+        
+        results = [r[col_idx] for r in records]
+        for res in results:
+            print(res)
 else:
     print(f"Invalid command: {command}")
