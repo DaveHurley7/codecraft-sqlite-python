@@ -60,7 +60,7 @@ class ParsedQuery:
     table = None
     
     def has_action(self):
-        return action != SQLAction.NONE
+        return self.action != SQLAction.NONE
 
 def parse(sql_str):
     token_stream = TokenStream(sql_str.split())
