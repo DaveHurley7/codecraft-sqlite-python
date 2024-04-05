@@ -49,7 +49,7 @@ class TokenStream:
     def skip_unneeded_tokens(self):
         if not self.has_next():
             raise NoTokenFoundError
-        while stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,"]:
+        while self.stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,"]:
             self.idx += 1
 
 class ParsedQuery:
