@@ -112,7 +112,7 @@ elif command.lower().startswith("select"):
             for res in results:
                 last_sep = len(res)-1
                 for i, col in enumerate(res):
-                    print(col,sep="|" if i < last_sep else "", end="")
+                    print(col,sep="" if i < last_sep else "|", end="")
                 print()
         
 else:
