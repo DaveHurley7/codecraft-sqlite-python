@@ -89,22 +89,26 @@ elif command.lower().startswith("select"):
         database_file.seek(108)
         cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
         records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
-        tbl_info = [rcd[3:] for rcd in records if rcd[2] == p_query.table]
-        print("TABLE INFO:",tbl_info)
-        tbl_rtpage = tbl_info[0]
-        mktbl_query = sp.parse(tbl_info[1].lower())
-        
+        tbl_info = [rcd[3:] for rcd in records if rcd[2] == p_query.table][0]
         page_offset = (tbl_rtpage-1)*page_size
         database_file.seek(page_offset+3)
         cell_amt = read_int(database_file,2)
-        database_file.seek(page_offset+8)
-        cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
-        records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
-        col_name = p_query.col_names[0]
-        col_idx = mktbl_query.index(col_name)
-        
-        results = [r[col_idx] for r in records]
-        for res in results:
-            print(res)
+        if p_query.count_cols:
+            print(cell_amt)
+        else:
+            print("TABLE INFO:",tbl_info)
+            tbl_rtpage = tbl_info[0]
+            mktbl_query = sp.parse(tbl_info[1].lower())
+
+
+            database_file.seek(page_offset+8)
+            cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
+            records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
+            col_name = p_query.col_names[0]
+            col_idx = mktbl_query.index(col_name)
+
+            results = [r[col_idx] for r in records]
+            for res in results:
+                print(res)
 else:
     print(f"Invalid command: {command}")

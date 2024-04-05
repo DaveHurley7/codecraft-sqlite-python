@@ -55,6 +55,7 @@ class TokenStream:
 class ParsedQuery:
     action = SQLAction.NONE
     all_cols = False
+    count_cols = False
     col_names = []
     col_dtypes = []
     table = None
@@ -74,6 +75,8 @@ def parse(sql_str):
             col_name = token_stream.get_next()
             if col_name == "*":
                 p_query.all_cols = True
+            elif col_name = "count(*)":
+                count_cols = True
             else:
                 col_names = []
                 while True:
