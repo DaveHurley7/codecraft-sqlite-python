@@ -97,7 +97,6 @@ elif command.lower().startswith("select"):
         if p_query.count_cols:
             print(cell_amt)
         else:
-            print("TABLE INFO:",tbl_info)
             mktbl_query = sp.parse(tbl_info[1].lower().replace("(","( ").replace(")"," )").replace(",",", "))
             database_file.seek(page_offset+8)
             cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
