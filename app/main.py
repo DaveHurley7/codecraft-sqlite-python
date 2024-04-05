@@ -1,5 +1,5 @@
 import sys
-import sql_parser as sp
+import app.sql_parser as sp
 
 from dataclasses import dataclass
 
