@@ -94,7 +94,6 @@ elif command.lower().startswith("select"):
         page_offset = (tbl_rtpage-1)*page_size
         database_file.seek(page_offset+3)
         cell_amt = read_int(database_file,2)
-        print("COUNTING:",p_query.count_cols)
         if p_query.count_cols:
             print(cell_amt)
         else:
