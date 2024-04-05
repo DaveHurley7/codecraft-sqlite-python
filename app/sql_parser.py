@@ -103,8 +103,7 @@ def parse(sql_str):
             tbl_name = token_stream.get_next()
             if tbl_name in keywords:
                 raise KeywordUsedAsTableNameError
-            token = token_stream.get_next()
-            if token != "(":
+            if token_stream.get_next() != "(":
                 print("ERROR:",token)
                 raise InvalidQuerySyntaxError("Expected a '(' after the table name")
             while token_stream.get_next() != ")":
