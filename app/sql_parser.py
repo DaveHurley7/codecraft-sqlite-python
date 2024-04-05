@@ -3,27 +3,27 @@ keywords = ["select","from","create","table"]
 class KeywordUsedAsColumnNameError(Exception):
     def __init__(self,msg="A keyword cannot be used as a column name"):
         self.message = msg
-        super().__init__(message)
+        super().__init__(self.message)
         
 class KeywordUsedAsTableNameError(Exception):
     def __init__(self,msg="A keyword cannot be used as a table name"):
         self.message = msg
-        super().__init__(message)
+        super().__init__(self.message)
         
 class NoTokenFoundError(Exception):
     def __init__(self,msg="No token found"):
         self.message = msg
-        super().__init__(message)
+        super().__init__(self.message)
         
 class QueryActionAlreadySetError(Exception):
     def __init__(self,msg="This token already has an action set"):
         self.message = msg
-        super().__init__(message)
+        super().__init__(self.message)
         
 class InvalidQuerySyntaxError(Exception):
     def __init__(self,msg="There is invalid syntax in the query"):
         self.message = msg
-        super().__init__(message)
+        super().__init__(self.message)
         
 class SQLAction:
     NONE   = 0
