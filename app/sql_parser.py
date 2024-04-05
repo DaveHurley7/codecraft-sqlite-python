@@ -80,7 +80,7 @@ def parse(sql_str):
             if col_name == "*":
                 p_query.all_cols = True
             elif col_name == "count(*)":
-                count_cols = True
+                p_query.count_cols = True
             else:
                 col_names = []
                 while True:
