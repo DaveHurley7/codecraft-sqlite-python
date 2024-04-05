@@ -99,7 +99,7 @@ elif command.lower().startswith("select"):
         else:
             print("TABLE INFO:",tbl_info)
             mktbl_query = sp.parse(tbl_info[1].lower().replace("(","( ").replace(")"," )"))
-            database_file.seek(page_offset+8
+            database_file.seek(page_offset+8)
             cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
             records = [parse_cell(page_offset+cell_ptr,database_file) for cell_ptr in cell_ptrs]
             col_name = p_query.col_names[0]
