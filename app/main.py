@@ -106,9 +106,9 @@ elif command.lower().startswith("select"):
                 col_idxs.append(mktbl_query.col_names.index(col))
 
             results = [[r[col_idx] for col_idx in col_idxs] for r in records]
+            print("RESULTS:",results)
             for res in results:
                 last_sep = len(res)-1
-                print("ROW:",res)
                 for i, col in enumerate(res):
                     print(col,sep="|" if i < last_sep else "", end="")
                 print()
