@@ -112,7 +112,7 @@ def parse(sql_str):
             if token_stream.get_next() != "(":
                 print("ERROR:",token)
                 raise InvalidQuerySyntaxError("Expected a '(' after the table name")
-            while token_stream.get_next() != ")":
+            while token_stream.peek_next() != ")":
                 col_name = token_stream.get_next()
                 data_type = token_stream.get_next()
                 if token_stream.peek_next() != ")":
