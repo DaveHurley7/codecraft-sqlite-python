@@ -110,7 +110,7 @@ elif command.lower().startswith("select"):
             results = [[r[col_idx] for col_idx in col_idxs] for r in records]
             #print("RESULTS:",results)
             for res in results:
-                print(*res)
+                print(*res,sep="|")
         
 else:
     print(f"Invalid command: {command}")
