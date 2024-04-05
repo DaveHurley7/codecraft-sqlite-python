@@ -53,14 +53,14 @@ class TokenStream:
             self.idx += 1
 
 class ParsedQuery:
-    action = SQLAction.None
+    action = SQLAction.NONE
     all_cols = False
     col_names = []
     col_dtypes = []
     table = None
     
     def has_action(self):
-        return action != SQLAction.None:
+        return action != SQLAction.NONE:
 
 def parse(sql_str):
     token_stream = TokenStream(sql_str.split())
