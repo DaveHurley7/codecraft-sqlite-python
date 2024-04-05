@@ -46,8 +46,8 @@ class TokenStream:
             return True
         return False
     
-    def peek_token(self):
-        return self.stream[self.idx]
+    def peek_next(self):
+        return self.stream[self.idx+1]
     
     def skip_unneeded_tokens(self):
         print("TOKENS:",self.stream[self.idx:])
@@ -115,7 +115,7 @@ def parse(sql_str):
             while token_stream.get_next() != ")":
                 col_name = token_stream.get_next()
                 data_type = token_stream.get_next()
-                if token_stream.peek_token() != ")":
+                if token_stream.peek_next() != ")":
                     token_stream.skip_unneeded_tokens()
                 if data_type.endswith(","):
                     data_type = data_type[:-1]
