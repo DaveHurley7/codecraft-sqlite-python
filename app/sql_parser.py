@@ -46,10 +46,11 @@ class TokenStream:
             return True
         return False
     
+    def peek_token(self):
+        return self.stream[self.idx]
+    
     def skip_unneeded_tokens(self):
         print("TOKENS:",self.stream[self.idx:])
-        if self.stream[self.idx] == ")":
-            return
         if not self.has_next():
             raise NoTokenFoundError
         while self.stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,"]:
@@ -114,7 +115,8 @@ def parse(sql_str):
             while token_stream.get_next() != ")":
                 col_name = token_stream.get_next()
                 data_type = token_stream.get_next()
-                token_stream.skip_unneeded_tokens()
+                if token_stream.peek_token() != ")":
+                    token_stream.skip_unneeded_tokens()
                 if data_type.endswith(","):
                     data_type = data_type[:-1]
                 p_query.col_names.append(col_name)
