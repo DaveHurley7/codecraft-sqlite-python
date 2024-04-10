@@ -93,7 +93,7 @@ def get_records(start_offset,db_file,n_cells,tdesc,query_ref):
         if query_ref.cond and query_ref.cond.col in record.keys():
             if not query_ref.cond.comp(record[query_ref.cond.col]):
                 continue  
-        records.append(list(record.values())
+        records.append(list(record.values()))
     return records
 
 if command == ".dbinfo":
