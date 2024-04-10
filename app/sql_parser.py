@@ -55,7 +55,7 @@ class TokenStream:
         while self.stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,"]:
             self.idx += 1
             
-class WhenCmp:
+class WhereCmp:
     EQ = 0
     NE = 1
     LT = 2
@@ -70,34 +70,32 @@ class QueryCond:
         self.value = value
     
     def _cmp_op(self,op):
-        if op == "==":
-            return WhenCmp.EQ
+        if op == "==" or op == "=":
+            return WhereCmp.EQ
         if op == "!=":
-            return WhenCmp.NE
+            return WhereCmp.NE
         if op == "<":
-            return WhenCmp.LT
+            return WhereCmp.LT
         if op == ">":
-            return WhenCmp.GT
+            return WhereCmp.GT
         if op == "<=":
-            return WhenCmp.LE
+            return WhereCmp.LE
         if op == ">=":
-            return WhenCmp.GE
+            return WhereCmp.GE
         
     def comp(self,val):
-        if WhenCmp.EQ:
+        if WhereCmp.EQ:
             return self.value == val
-        if WhenCmp.NE:
+        if WhereCmp.NE:
             return self.value != val
-        if WhenCmp.LT:
+        if WhereCmp.LT:
             return self.value < val
-        if WhenCmp.GT:
+        if WhereCmp.GT:
             return self.value > val
-        if WhenCmp.LE:
+        if WhereCmp.LE:
             return self.value <= val
-        if WhenCmp.GE:
+        if WhereCmp.GE:
             return self.value >= val
-        
-        
 
 class ParsedQuery:
     action = SQLAction.NONE
@@ -165,7 +163,7 @@ def parse(sql_str):
                     data_type = data_type[:-1]
                 p_query.col_names.append(col_name)
                 p_query.col_dtypes.append(data_type)
-        elif "when" == token:
+        elif "where" == token:
             col_name = token_stream.get_next()
             cmp_op = token_stream.get_next()
             value = token_stream.get_next()

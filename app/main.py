@@ -130,7 +130,7 @@ elif command.lower().startswith("select"):
         else:
             database_file.seek(page_offset+5)
             cell_content_start = read_int(database_file,2)
-            records = parse_records(page_offset+cell_content_start,database_file,cell_amt,tbl_info["desc"],p_query)
+            records = get_records(page_offset+cell_content_start,database_file,cell_amt,tbl_info["desc"],p_query)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(mktbl_query.col_names.index(col))
