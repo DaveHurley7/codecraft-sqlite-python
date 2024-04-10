@@ -22,6 +22,19 @@ def read_varint(file):
             break
     return val
 
+def read_varint_mem(buffer):
+    val = 0
+    buf_idx = 0
+    USE_NEXT_BYTE = 0x80
+    BITS_TO_USE = 0x7F
+    for _ in range(9):
+        byte = buffer[buf_idx]
+        val = (val << 7) | (byte & BITS_TO_USE)
+        if byte & USE_NEXT_BYTE == 0:
+            break
+        buf_idx += 1
+    return val
+
 def parse_record_body(srl_type,file):
     if srl_type == 0:
         return None
@@ -48,7 +61,7 @@ def parse_record_body(srl_type,file):
         return None
     
 def parse_cell(c_ptr,file):
-    database_file.seek(c_ptr)
+    file.seek(c_ptr)
     payload_size = read_varint(file)
     row_id = read_varint(file)
     format_hdr_start = file.tell()
@@ -57,11 +70,31 @@ def parse_cell(c_ptr,file):
     format_body_start = format_hdr_start+format_hdr_sz
     while file.tell() < format_body_start:
         serial_types.append(read_varint(file))
-    records = []
+    record = []
     for srl_type in serial_types:
-        records.append(parse_record_body(srl_type,file))
+        record.append(parse_record_body(srl_type,file))
+    return record
+
+def get_table_info(cell_ptrs,dbfile,tbl_name):
+    for cell_ptr in cell_ptrs:
+        record = parse_cell(cell_ptr,dbfile)
+        if record[1] == tbl_name:
+            return {"rootpage":record[3],"desc":sp.parse(record[4].lower().replace("(","( ").replace(")"," )").replace(",",", "))}
+        
+def get_records(start_offset,db_file,n_cells,tdesc,query_ref):
+    records = []
+    for _ in range(n_cells):
+        cell = parse_cell(start_offset,db_file)
+        record = {}
+        c = 0
+        for col in tdesc.col_names:
+            record[col] = cell[c]
+            c += 1
+        if query_ref.cond and query_ref.cond.col in record.keys():
+            if not query_ref.cond.comp(record[query_ref.cond.col]):
+                continue  
+        records.append(record.values())
     return records
-    
 
 if command == ".dbinfo":
     with open(database_file_path, "rb") as database_file:
@@ -88,19 +121,16 @@ elif command.lower().startswith("select"):
         cell_amt = read_int(database_file,2)
         database_file.seek(108)
         cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
-        records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
-        tbl_info = [rcd[3:] for rcd in records if rcd[2] == p_query.table][0]
-        tbl_rtpage = tbl_info[0]
-        page_offset = (tbl_rtpage-1)*page_size
+        tbl_info = get_table_info(cell_ptrs,database_file,p_query.table)
+        page_offset = (tbl_info["rootpage"]-1)*page_size
         database_file.seek(page_offset+3)
         cell_amt = read_int(database_file,2)
         if p_query.count_cols:
             print(cell_amt)
         else:
-            mktbl_query = sp.parse(tbl_info[1].lower().replace("(","( ").replace(")"," )").replace(",",", "))
-            database_file.seek(page_offset+8)
-            cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
-            records = [parse_cell(page_offset+cell_ptr,database_file) for cell_ptr in cell_ptrs]
+            database_file.seek(page_offset+5)
+            cell_content_start = read_int(database_file,2)
+            records = parse_records(page_offset+cell_content_start,database_file,cell_amt,tbl_info["desc"],p_query)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(mktbl_query.col_names.index(col))

@@ -33,7 +33,7 @@ class SQLAction:
 class TokenStream:
     def __init__(self,tokens):
         self.idx = -1
-        self.stream= tokens
+        self.stream = tokens
         
     def get_next(self):
         self.idx += 1
@@ -54,6 +54,50 @@ class TokenStream:
             raise NoTokenFoundError
         while self.stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,"]:
             self.idx += 1
+            
+class WhenCmp:
+    EQ = 0
+    NE = 1
+    LT = 2
+    GT = 3
+    LE = 4
+    GE = 5
+    
+class QueryCond:
+    def __init__(self,col,op,val):
+        self.col = col
+        self.op = _cmp_op(op)
+        self.value = value
+    
+    def _cmp_op(self,op):
+        if op == "==":
+            return WhenCmp.EQ
+        if op == "!=":
+            return WhenCmp.NE
+        if op == "<":
+            return WhenCmp.LT
+        if op == ">":
+            return WhenCmp.GT
+        if op == "<=":
+            return WhenCmp.LE
+        if op == ">=":
+            return WhenCmp.GE
+        
+    def comp(self,val):
+        if WhenCmp.EQ:
+            return self.value == val
+        if WhenCmp.NE:
+            return self.value != val
+        if WhenCmp.LT:
+            return self.value < val
+        if WhenCmp.GT:
+            return self.value > val
+        if WhenCmp.LE:
+            return self.value <= val
+        if WhenCmp.GE:
+            return self.value >= val
+        
+        
 
 class ParsedQuery:
     action = SQLAction.NONE
@@ -62,6 +106,7 @@ class ParsedQuery:
     col_names = []
     col_dtypes = []
     table = None
+    cond = None
     
     def has_action(self):
         return self.action != SQLAction.NONE
@@ -120,5 +165,10 @@ def parse(sql_str):
                     data_type = data_type[:-1]
                 p_query.col_names.append(col_name)
                 p_query.col_dtypes.append(data_type)
+        elif "when" == token:
+            col_name = token_stream.get_next()
+            cmp_op = token_stream.get_next()
+            value = token_stream.get_next()
+            p_query.cond = QueryCond(col_name,cmp_op,value)
     return p_query
             
