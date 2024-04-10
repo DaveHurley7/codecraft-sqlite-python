@@ -81,16 +81,15 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
         if record[1] == tbl_name:
             return {"rootpage":record[3],"desc":sp.parse(record[4].lower().replace("(","( ").replace(")"," )").replace(",",", "))}
         
-def get_records(start_offset,db_file,n_cells,tdesc,query_ref):
+def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
-    for _ in range(n_cells):
-        cell = parse_cell(start_offset,db_file)
+    for c_ptr in cells:
+        cell = parse_cell(start_offset+c_ptr,db_file)
         record = {}
         c = 0
         for col in tdesc.col_names:
             record[col] = cell[c]
             c += 1
-        print("RECORDS:",record)
         if query_ref.cond and query_ref.cond.col in record.keys():
             if not query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
@@ -129,9 +128,9 @@ elif command.lower().startswith("select"):
         if p_query.count_cols:
             print(cell_amt)
         else:
-            database_file.seek(page_offset+5)
-            cell_content_start = read_int(database_file,2)
-            records = get_records(page_offset+cell_content_start,database_file,cell_amt,tbl_info["desc"],p_query)
+            database_file.seek(page_offset+3)
+            cells = [read_int(database_file,2) for _ in cell_amt]
+            records = get_records(page_offset,cells,database_file,tbl_info["desc"],p_query)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
