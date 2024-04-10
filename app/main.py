@@ -133,11 +133,12 @@ elif command.lower().startswith("select"):
             records = get_records(page_offset+cell_content_start,database_file,cell_amt,tbl_info["desc"],p_query)
             col_idxs = []
             for col in p_query.col_names:
-                print("VAL:",tbl_info["desc"].col_names.index(col))
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
             #print("COLUMN COUNT:",len(col_idxs))
             #print("RECORDS:",records)
 
+            for r in records:
+                print(r)
             results = [[r[col_idx] for col_idx in col_idxs] for r in records]
             #print("RESULTS:",results)
             for res in results:
