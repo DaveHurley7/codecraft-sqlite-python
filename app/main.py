@@ -90,10 +90,10 @@ def get_records(start_offset,db_file,n_cells,tdesc,query_ref):
         for col in tdesc.col_names:
             record[col] = cell[c]
             c += 1
+        print("RECORDS:",record)
         if query_ref.cond and query_ref.cond.col in record.keys():
             if not query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
-        print("RECORDS:",record)
         records.append(list(record.values()))
     return records
 
