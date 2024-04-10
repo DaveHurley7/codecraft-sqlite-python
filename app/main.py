@@ -129,7 +129,9 @@ elif command.lower().startswith("select"):
             print(cell_amt)
         else:
             database_file.seek(page_offset+3)
+            print("READING CELL PTRS")
             cells = [read_int(database_file,2) for _ in range(cell_amt)]
+            print("CELL PTRS OBTAINED")
             records = get_records(page_offset,cells,database_file,tbl_info["desc"],p_query)
             col_idxs = []
             for col in p_query.col_names:
