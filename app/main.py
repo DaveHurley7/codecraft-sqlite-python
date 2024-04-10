@@ -94,6 +94,7 @@ def get_records(start_offset,db_file,n_cells,tdesc,query_ref):
             if not query_ref.cond.comp(record[query_ref.cond.col]):
                 continue  
         records.append(list(record.values()))
+    print("RECORDS:",records)
     return records
 
 if command == ".dbinfo":
@@ -134,7 +135,6 @@ elif command.lower().startswith("select"):
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
-            print(*records)
             results = [[r[col_idx] for col_idx in col_idxs] for r in records]
             for res in results:
                 print(*res,sep="|")
