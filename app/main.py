@@ -94,7 +94,8 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
             if not query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
-    print("RECORDS:",records)
+    if query_ref.cond:
+        print("RECORDS:",records)
     return records
 
 if command == ".dbinfo":
