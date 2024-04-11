@@ -88,6 +88,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         record = {}
         c = 0
         for col in tdesc.col_names:
+            print("VAL OF C:",c)
             record[col] = cell[c]
             c += 1
         if query_ref.cond and query_ref.cond.col in record.keys():
