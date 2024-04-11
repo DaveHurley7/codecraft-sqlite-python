@@ -92,8 +92,8 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
             c += 1
         if query_ref.cond and query_ref.cond.col in record.keys():
             #print("HAVE COND AND TABLE IN RECORD")
-            if not query_ref.cond.comp(record[query_ref.cond.value]):
-                #print()
+            if not query_ref.cond.comp(record[query_ref.cond.col]):
+                print("VALUE IN COL DOESN'T MATCH",record[query_ref.cond.col])
                 continue
         records.append(list(record.values()))
     if query_ref.cond:
