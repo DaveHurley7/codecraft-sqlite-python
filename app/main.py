@@ -85,10 +85,11 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
         cell = parse_cell(start_offset+c_ptr,db_file)
+        print("CELL:",cell)
         record = {}
         c = 0
         for col in tdesc.col_names:
-            print("VALS:",cell,"#",c)
+            print("INDEX:",c)
             record[col] = cell[c]
             c += 1
         if query_ref.cond and query_ref.cond.col in record.keys():
