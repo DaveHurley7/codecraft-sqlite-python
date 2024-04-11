@@ -66,7 +66,7 @@ class WhereCmp:
 class QueryCond:
     def __init__(self,col,op,val):
         self.col = col
-        self.op = _cmp_op(op)
+        self.op = self._cmp_op(op)
         self.value = value
     
     def _cmp_op(self,op):
