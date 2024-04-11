@@ -92,13 +92,8 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
             c += 1
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
-                print("VALUE IN COL DOESN'T MATCH",record[query_ref.cond.col])
                 continue
-            else:
-                print("COL HAS VALUE",record[query_ref.cond.col])
         records.append(list(record.values()))
-    if query_ref.cond:
-        print("RECORDS:",records)
     return records
 
 if command == ".dbinfo":
