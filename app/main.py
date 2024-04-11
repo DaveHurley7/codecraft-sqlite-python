@@ -84,6 +84,7 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
+        print("OFFSET",hex(c_ptr))
         cell = parse_cell(start_offset+c_ptr,db_file)
         print("CELL:",cell)
         record = {}
