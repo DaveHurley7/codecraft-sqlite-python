@@ -83,6 +83,9 @@ class QueryCond:
         if op == ">=":
             return WhereCmp.GE
         
+    def __str__(self):
+        return col + " " + str(op) + " " + val
+        
     def comp(self,val):
         if WhereCmp.EQ:
             return self.value == val
@@ -168,5 +171,6 @@ def parse(sql_str):
             cmp_op = token_stream.get_next()
             value = token_stream.get_next()
             p_query.cond = QueryCond(col_name,cmp_op,value)
+            print("CONDITION:",p_query.cond)
     return p_query
             
