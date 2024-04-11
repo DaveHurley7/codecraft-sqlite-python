@@ -84,13 +84,10 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
-        print("OFFSET",hex(c_ptr))
         cell = parse_cell(start_offset+c_ptr,db_file)
-        print("CELL:",cell)
         record = {}
         c = 0
         for col in tdesc.col_names:
-            print("INDEX:",c)
             record[col] = cell[c]
             c += 1
         if query_ref.cond and query_ref.cond.col in record.keys():
@@ -132,9 +129,7 @@ elif command.lower().startswith("select"):
             print(cell_amt)
         else:
             database_file.seek(page_offset+8)
-            print("READING CELL PTRS")
             cells = [read_int(database_file,2) for _ in range(cell_amt)]
-            print("CELL PTRS OBTAINED",cells)
             records = get_records(page_offset,cells,database_file,tbl_info["desc"],p_query)
             col_idxs = []
             for col in p_query.col_names:
