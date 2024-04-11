@@ -67,7 +67,7 @@ class QueryCond:
     def __init__(self,col,op,val):
         self.col = col
         self.op = self._cmp_op(op)
-        self.value = value
+        self.value = val
     
     def _cmp_op(self,op):
         if op == "==" or op == "=":
