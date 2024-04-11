@@ -84,7 +84,7 @@ class QueryCond:
             return WhereCmp.GE
         
     def __str__(self):
-        return col + " " + str(op) + " " + val
+        return self.col + " " + str(self.op) + " " + self.val
         
     def comp(self,val):
         if WhereCmp.EQ:
