@@ -87,6 +87,7 @@ class QueryCond:
         return self.col + " " + str(self.op) + " " + self.value
         
     def comp(self,val):
+        print("COMPARING",self.value,"TO",val)
         if WhereCmp.EQ:
             return self.value == val
         if WhereCmp.NE:
