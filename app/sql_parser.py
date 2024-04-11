@@ -169,8 +169,8 @@ def parse(sql_str):
         elif "where" == token:
             col_name = token_stream.get_next()
             cmp_op = token_stream.get_next()
-            value = token_stream.get_next()
+            value = token_stream.get_next().capitalize()
             p_query.cond = QueryCond(col_name,cmp_op,value)
-            print("CONDITION:",p_query.cond)
+            #print("CONDITION:",p_query.cond)
     return p_query
             
