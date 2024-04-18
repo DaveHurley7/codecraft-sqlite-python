@@ -149,7 +149,6 @@ elif command.lower().startswith("select"):
         if p_query.count_cols:
             print(len(records))
         else:
-            print(records)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
