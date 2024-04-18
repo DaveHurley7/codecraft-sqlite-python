@@ -76,11 +76,11 @@ def parse_cell(c_ptr,file):
     format_body_start = format_hdr_start+format_hdr_sz
     while file.tell() < format_body_start:
         serial_types.append(read_varint(file))
+    if not serial_types:
+        print("NO TYPES")
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
-    if not record:
-        print("BLANK CELL")
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
