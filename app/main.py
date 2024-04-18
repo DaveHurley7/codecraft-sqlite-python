@@ -79,10 +79,6 @@ def parse_cell(c_ptr,file):
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
-#    if 'dummy_value' in record or 'table' in record:
-#        pass
-#    else:
-#        print("RECORD:",record)
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
@@ -153,7 +149,7 @@ elif command.lower().startswith("select"):
         if p_query.count_cols:
             print(len(records))
         else:
-            #print(records)
+            print(records)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
