@@ -92,12 +92,13 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
     #print('COL_NAMES:',tdesc.col_names)
     for c_ptr in cells:
         cell = parse_cell(start_offset+c_ptr,db_file)
+        if not cell:
+            continue
         #print('CELL:',cell)
         record = {}
-        c = 0
-        for col in tdesc.col_names:
-            record[col] = cell[c]
-            c += 1
+        for col_name, col_value in zip(tdesc.col_names,cell):
+            record[col_name] = col_value
+            
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
