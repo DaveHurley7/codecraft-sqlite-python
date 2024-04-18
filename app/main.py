@@ -79,6 +79,8 @@ def parse_cell(c_ptr,file):
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
+    if not record:
+        print("BLANK CELL")
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
