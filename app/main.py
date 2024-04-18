@@ -105,7 +105,7 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
     page_type = read_int(db_file,1)
     db_file.seek(pg_num+3)
     cell_amt = read_int(db_file,2)
-    db_file.seek(page_offset + (12 if page_type == PageType.InteriorTable else 8))
+    db_file.seek(page_offset + (12 if page_type&8 == 0 else 8))
     cell_ptrs = [read_int(db_file,2) for _ in range(cell_amt)]
     if page_type == PageType.InteriorTable:
         records = []
