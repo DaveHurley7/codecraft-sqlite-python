@@ -79,7 +79,7 @@ def parse_cell(c_ptr,file):
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
-    if 'dummy_value' not in record:
+    if 'dummy_value' not in record or 'table' not in record:
         print(record)
     return record
 
