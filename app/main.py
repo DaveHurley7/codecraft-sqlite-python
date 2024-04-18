@@ -89,11 +89,14 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
         
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
+    print('COL_NAMES:',tdesc.col_names)
     for c_ptr in cells:
         cell = parse_cell(start_offset+c_ptr,db_file)
+        print('CELL:',cell)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
+            
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
