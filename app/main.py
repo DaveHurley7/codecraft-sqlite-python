@@ -79,10 +79,10 @@ def parse_cell(c_ptr,file):
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
-    if 'dummy_value' in record or 'table' in record:
-        pass
-    else:
-        print("RECORD:",record)
+#    if 'dummy_value' in record or 'table' in record:
+#        pass
+#    else:
+#        print("RECORD:",record)
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
