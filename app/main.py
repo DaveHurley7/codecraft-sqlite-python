@@ -77,7 +77,7 @@ def parse_cell(c_ptr,file):
     while file.tell() < format_body_start:
         serial_types.append(read_varint(file))
     if not serial_types:
-        print("NO TYPES")
+        print("\rNO TYPES")
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
@@ -149,7 +149,7 @@ elif command.lower().startswith("select"):
         page_offset = (tbl_info["rootpage"]-1)*page_size
         records = travel_pages(page_offset,page_size,database_file,tbl_info["desc"],p_query)
         if p_query.count_cols:
-            print(len(records))
+            print('\r'+len(records))
         else:
             print(records)
             col_idxs = []
