@@ -92,8 +92,8 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
     #print('COL_NAMES:',tdesc.col_names)
     for c_ptr in cells:
         cell = parse_cell(start_offset+c_ptr,db_file)
-        if not cell:
-            continue
+        #if not cell:
+         #   continue
         #print('CELL:',cell)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
