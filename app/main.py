@@ -98,6 +98,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
+    print(records)
     return records
 
 def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
@@ -149,7 +150,7 @@ elif command.lower().startswith("select"):
         if p_query.count_cols:
             print(len(records))
         else:
-            print(records)
+            #print(records)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
