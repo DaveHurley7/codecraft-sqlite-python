@@ -79,6 +79,8 @@ def parse_cell(c_ptr,file):
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
+    if 'dummy_value' not in record:
+        print(record)
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
@@ -89,22 +91,15 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
         
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
-    #print('COL_NAMES:',tdesc.col_names)
     for c_ptr in cells:
         cell = parse_cell(start_offset+c_ptr,db_file)
-        #if not cell:
-         #   continue
-        #print('CELL:',cell)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
-            
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
-    if len(records) < 10:
-        print(records)
     return records
 
 def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
