@@ -146,10 +146,10 @@ elif command.lower().startswith("select"):
         tbl_info = get_table_info(cell_ptrs,database_file,p_query.table)
         page_offset = (tbl_info["rootpage"]-1)*page_size
         records = travel_pages(page_offset,page_size,database_file,tbl_info["desc"],p_query)
-        print(records)
         if p_query.count_cols:
             print(len(records))
         else:
+            print(records)
             col_idxs = []
             for col in p_query.col_names:
                 col_idxs.append(tbl_info["desc"].col_names.index(col))
