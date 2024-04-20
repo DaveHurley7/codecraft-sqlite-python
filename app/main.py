@@ -41,7 +41,7 @@ def read_varint_mem(buffer):
         buf_idx += 1
     return val
 
-def parse_record_body(srl_type,file):
+def parse_record_body(srl_type,file,spos):
     if srl_type == 0:
         return None
     elif srl_type == 1:
@@ -65,7 +65,7 @@ def parse_record_body(srl_type,file):
             data = file.read(datalen) #.decode()
             return data.decode()
         except UnicodeDecodeError:
-            print("SRL_TYPE:",srl_type)
+            print("SRL_TYPE:",srl_type,"LOC:",spos)
             print("File pos:",hex(file.tell()),data,file=sys.stderr)
     else:
         print("INVALID SERIAL TYPE")
@@ -78,12 +78,15 @@ def parse_cell(c_ptr,file):
     format_hdr_start = file.tell()
     format_hdr_sz = read_varint(file)
     serial_types = []
+    srl_pos = []
     format_body_start = format_hdr_start+format_hdr_sz
     while file.tell() < format_body_start:
+        srl_loc = file.tell()
         serial_types.append(read_varint(file))
+        srl_pos.append(srl_loc)
     record = []
-    for srl_type in serial_types:
-        record.append(parse_record_body(srl_type,file))
+    for srl_type, srl_idx in zip(serial_types,srl_pos):
+        record.append(parse_record_body(srl_type,file,srl_idx))
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
