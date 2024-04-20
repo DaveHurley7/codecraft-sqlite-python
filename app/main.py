@@ -62,9 +62,10 @@ def parse_record_body(srl_type,file):
     elif srl_type >= 13 and srl_type%2==1:
         datalen = (srl_type-13)//2
         try:
-            return file.read(datalen).decode()
+            data = file.read(datalen) #.decode()
+            return data.decode()
         except UnicodeDecodeError:
-            print("File pos:",hex(file.tell()))
+            print("File pos:",hex(file.tell()),data)
     else:
         print("INVALID SERIAL TYPE")
         return None
