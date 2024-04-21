@@ -85,6 +85,7 @@ def parse_cell(c_ptr,file):
             record.append(parse_record_body(srl_type,file))
         except UnicodeDecodeError:
             print(record)
+            quit(1)
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
