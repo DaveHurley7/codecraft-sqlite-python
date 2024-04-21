@@ -84,7 +84,7 @@ def parse_cell(c_ptr,file):
         try:
             record.append(parse_record_body(srl_type,file))
         except UnicodeDecodeError:
-            print(record)
+            print("STARTED AT:",c_ptr,"\nRECORD:",record)
             quit(1)
     return record
 
