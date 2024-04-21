@@ -66,7 +66,7 @@ def parse_record_body(srl_type,file,spos):
             return data.decode()
         except UnicodeDecodeError:
             print("SRL_TYPE:",srl_type,"LOC:",hex(spos))
-            print("File pos:",hex(file.tell()),data,file=sys.stderr)
+            print("File pos:",hex(file.tell()),data)
     else:
         print("INVALID SERIAL TYPE")
         return None
