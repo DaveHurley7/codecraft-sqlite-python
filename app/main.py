@@ -96,7 +96,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         try:
             cell = parse_cell(start_offset+c_ptr,db_file)
         except UnicodeDecodeError:
-            print("PAGE:",hex(start_offset),"CELLS:",cells)
+            print("PAGE:",hex(start_offset),"CELLS:",[hex(c) for c in cells])
             quit(1)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
