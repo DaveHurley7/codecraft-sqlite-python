@@ -69,8 +69,7 @@ def parse_record_body(srl_type,file):
         print("INVALID SERIAL TYPE")
         return None
     
-def parse_cell(pg,cptr,file):
-    c_ptr = pg+cptr
+def parse_cell(c_ptr,file):
     file.seek(c_ptr)
     payload_size = read_varint(file)
     row_id = read_varint(file)
@@ -82,23 +81,23 @@ def parse_cell(pg,cptr,file):
         serial_types.append(read_varint(file))
     record = []
     for srl_type in serial_types:
-        try:
-            record.append(parse_record_body(srl_type,file))
-        except UnicodeDecodeError:
-            print("PAGE:",hex(pg),"CELL:",hex(cptr))
-            quit(1)
+        record.append(parse_record_body(srl_type,file))
     return record
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
     for cell_ptr in cell_ptrs:
-        record = parse_cell(0,cell_ptr,dbfile)
+        record = parse_cell(cell_ptr,dbfile)
         if record[1] == tbl_name:
             return {"rootpage":record[3],"desc":sp.parse(record[4].lower().replace("(","( ").replace(")"," )").replace(",",", "))}
         
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
-        cell = parse_cell(start_offset,c_ptr,db_file)
+        try:
+            cell = parse_cell(start_offset+c_ptr,db_file)
+        except UnicodeDecodeError:
+            print("PAGE:",hex(start_offset),"CELLS:",cells)
+            quit(1)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
@@ -139,7 +138,7 @@ elif command == ".tables":
         cell_amt = read_int(database_file,2)
         database_file.seek(108)
         cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
-        records = [parse_cell(0,cell_ptr,database_file) for cell_ptr in cell_ptrs]
+        records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
         tbl_names = [rcd[2] for rcd in records if rcd[2] != "sqlite_sequence"]
         print(*tbl_names)
 elif command.lower().startswith("select"):
