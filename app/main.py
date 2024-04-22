@@ -85,7 +85,7 @@ def parse_cell(pg,cptr,file):
         try:
             record.append(parse_record_body(srl_type,file))
         except UnicodeDecodeError:
-            print("PAGE:",pg,"CELL:",hex(cptr)
+            print("PAGE:",pg,"CELL:",hex(cptr))
             quit(1)
     return record
 
