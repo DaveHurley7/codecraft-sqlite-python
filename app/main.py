@@ -140,7 +140,7 @@ elif command == ".tables":
         cell_amt = read_int(database_file,2)
         database_file.seek(108)
         cell_ptrs = [read_int(database_file,2) for _ in range(cell_amt)]
-        records = [parse_cell(cell_ptr,database_file) for cell_ptr in cell_ptrs]
+        records = [parse_cell(0,cell_ptr,database_file) for cell_ptr in cell_ptrs]
         tbl_names = [rcd[2] for rcd in records if rcd[2] != "sqlite_sequence"]
         print(*tbl_names)
 elif command.lower().startswith("select"):
