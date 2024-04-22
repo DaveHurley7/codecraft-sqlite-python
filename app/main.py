@@ -70,7 +70,6 @@ def parse_record_body(srl_type,file):
         return None
     
 def parse_cell(pg,cptr,file):
-    print("PAGE:",pg,"CELL:",cptr)
     c_ptr = pg+cptr
     file.seek(c_ptr)
     payload_size = read_varint(file)
@@ -86,7 +85,7 @@ def parse_cell(pg,cptr,file):
         try:
             record.append(parse_record_body(srl_type,file))
         except UnicodeDecodeError:
-            print("STARTED AT:",hex(c_ptr),"\nRECORD:",record)
+            print("PAGE:",pg,"CELL:",hex(cptr)
             quit(1)
     return record
 
