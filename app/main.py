@@ -69,7 +69,9 @@ def parse_record_body(srl_type,file):
         print("INVALID SERIAL TYPE")
         return None
     
-def parse_cell(c_ptr,file):
+def parse_cell(pg,cptr,file):
+    print("PAGE:",pg,"CELL:",cptr)
+    c_ptr = pg+cptr
     file.seek(c_ptr)
     payload_size = read_varint(file)
     row_id = read_varint(file)
@@ -97,7 +99,7 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
-        cell = parse_cell(start_offset+c_ptr,db_file)
+        cell = parse_cell(start_offset,c_ptr,db_file)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
