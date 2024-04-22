@@ -92,7 +92,7 @@ def parse_cell(pg,cptr,file):
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
     for cell_ptr in cell_ptrs:
-        record = parse_cell(cell_ptr,dbfile)
+        record = parse_cell(0,cell_ptr,dbfile)
         if record[1] == tbl_name:
             return {"rootpage":record[3],"desc":sp.parse(record[4].lower().replace("(","( ").replace(")"," )").replace(",",", "))}
         
