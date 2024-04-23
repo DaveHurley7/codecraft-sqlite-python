@@ -122,7 +122,7 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
         try:
             return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
         except UnicodeDecodeError:
-            print("PAGE:",hex(start_offset),"CELLS:",[hex(c) for c in cells])
+            print("PAGE:",hex(pg_num),"CELLS:",[hex(c) for c in cell_ptrs])
             quit(1)
             
 if command == ".dbinfo":
