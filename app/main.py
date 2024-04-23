@@ -120,6 +120,7 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
             page_num = read_int(db_file,4)
             key = read_varint(db_file)
             records.extend(travel_pages((page_num-1)*pgsz,pgsz,db_file,tdesc,query_ref))
+            print(page_num)
         print(records)
         return records
     elif page_type == PageType.LeafTable:
