@@ -121,7 +121,6 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
             key = read_varint(db_file)
             records.extend(travel_pages((page_num-1)*pgsz,pgsz,db_file,tdesc,query_ref))
         print(records)
-        quit(1)
         return records
     elif page_type == PageType.LeafTable:
         return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
