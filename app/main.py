@@ -63,7 +63,7 @@ def parse_record_body(srl_type,file):
         datalen = (srl_type-13)//2
         return file.read(datalen).decode()
     else:
-        print("INVALID SERIAL TYPE")
+        print("INVALID SERIAL TYPE:",srl_type)
         return None
     
 def parse_cell(c_ptr,file):
