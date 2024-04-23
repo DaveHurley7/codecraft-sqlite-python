@@ -61,10 +61,7 @@ def parse_record_body(srl_type,file):
         return file.read(datalen).decode()
     elif srl_type >= 13 and srl_type%2==1:
         datalen = (srl_type-13)//2
-        #try:
-        data = file.read(datalen) #.decode()
         return data.decode()
-        #except UnicodeDecodeError:
     else:
         print("INVALID SERIAL TYPE")
         return None
@@ -119,11 +116,7 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
             records.extend(travel_pages((page_num-1)*pgsz,pgsz,db_file,tdesc,query_ref))
         return records
     elif page_type == PageType.LeafTable:
-        try:
-            return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
-        except UnicodeDecodeError:
-            print("PAGE:",hex(pg_num),"CELLS:",[hex(c) for c in cell_ptrs])
-            quit(1)
+        return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
             
 if command == ".dbinfo":
     with open(database_file_path, "rb") as database_file:
