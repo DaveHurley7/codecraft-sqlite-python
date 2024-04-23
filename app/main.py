@@ -93,11 +93,7 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
-        try:
-            cell = parse_cell(start_offset+c_ptr,db_file)
-        except UnicodeDecodeError:
-            print("PAGE:",hex(start_offset),"CELLS:",[hex(c) for c in cells])
-            quit(1)
+        cell = parse_cell(start_offset+c_ptr,db_file)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
@@ -123,7 +119,11 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
             records.extend(travel_pages((page_num-1)*pgsz,pgsz,db_file,tdesc,query_ref))
         return records
     elif page_type == PageType.LeafTable:
-        return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
+        try:
+            return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
+        except UnicodeDecodeError:
+            print("PAGE:",hex(start_offset),"CELLS:",[hex(c) for c in cells])
+            quit(1)
             
 if command == ".dbinfo":
     with open(database_file_path, "rb") as database_file:
