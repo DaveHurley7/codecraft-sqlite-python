@@ -56,6 +56,12 @@ def parse_record_body(srl_type,file):
         return read_int(file,6)    
     elif srl_type == 6:
         return read_int(file,8)
+    elif srl_type == 7:
+        return None #Is supposed to return a float
+    elif srl_type == 8:
+        return 0
+    elif srl_type == 9:
+        return 1
     elif srl_type >= 12 and srl_type%2==0:
         datalen = (srl_type-12)//2
         return file.read(datalen).decode()
