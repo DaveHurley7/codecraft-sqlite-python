@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 database_file_path = sys.argv[1]
 command = sys.argv[2]
-ON_STG8 = false
+ON_STG8 = False
 
 class PageType:
     InteriorIndex = 0x02
@@ -118,7 +118,7 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
     cell_ptrs = [read_int(db_file,2) for _ in range(cell_amt)]
     if page_type == PageType.InteriorTable:
         global ON_STG8
-        ON_STG8 = true
+        ON_STG8 = True
         records = []
         for c_ptr in cell_ptrs:
             db_file.seek(pg_num+c_ptr)
