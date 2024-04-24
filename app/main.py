@@ -101,7 +101,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             if col_name == "id":
-                record[col_name] = col_value | row_id
+                record[col_name] = col_value or row_id
             else:
                 record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
