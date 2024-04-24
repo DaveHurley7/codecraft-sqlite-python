@@ -170,8 +170,10 @@ def parse(sql_str):
             col_name = token_stream.get_next()
             cmp_op = token_stream.get_next()
             value = token_stream.get_next()
-            if value.startswith("'") and value.endswith("'"):
-                value = value[1:-1].capitalize()
+            if value.startswith("'") and not value.endswith("'"):
+                while not value.endswith("'"):
+                    value += " " + token_stream.get_next()
+                value = value[1:-1].title()
             p_query.cond = QueryCond(col_name,cmp_op,value)
             #print("CONDITION:",p_query.cond)
     return p_query
