@@ -106,7 +106,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
                 continue
         records.append(list(record.values()))
     if ON_STG8:
-        print("RECORDS:",hex(start_offset),hex(cells)
+        print("RECORDS:",hex(start_offset),hex(cells))
     return records
 
 def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
