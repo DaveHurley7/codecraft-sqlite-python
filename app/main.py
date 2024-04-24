@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 database_file_path = sys.argv[1]
 command = sys.argv[2]
+ON_STG8 = False
 
 class PageType:
     InteriorIndex = 0x02
@@ -101,11 +102,10 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
             if col_name == "id":
-                print("COL ID EXISTS")
+                if ON_STG8:
+                    print("COL ID EXISTS")
                 if not col_value:
                     col_value = row_id
-            else:
-                print("NO COL ID")
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
@@ -120,6 +120,7 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
     db_file.seek(pg_num + (12 if page_type&8 == 0 else 8))
     cell_ptrs = [read_int(db_file,2) for _ in range(cell_amt)]
     if page_type == PageType.InteriorTable:
+        ON_STG8 = True
         records = []
         for c_ptr in cell_ptrs:
             db_file.seek(pg_num+c_ptr)
