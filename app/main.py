@@ -103,7 +103,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
             record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
             if ON_STG8:
-                print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value)
+                print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value,"COL:",query_ref.cond.col)
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
