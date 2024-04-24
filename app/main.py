@@ -100,15 +100,10 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         cell, row_id = parse_cell(start_offset+c_ptr,db_file)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
-            record[col_name] = col_value
             if col_name == "id":
-                if ON_STG8:
-                    print("COL ID EXISTS")
-                if not col_value:
-                    col_value = row_id
+                record[col_name] = col_value | row_id
             else:
-                if ON_STG8:
-                    print("NO COL ID")
+                record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
