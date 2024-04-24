@@ -8,6 +8,7 @@ from dataclasses import dataclass
 database_file_path = sys.argv[1]
 command = sys.argv[2]
 ON_STG8 = False
+LIMIT = 0
 
 class PageType:
     InteriorIndex = 0x02
@@ -104,6 +105,10 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         if query_ref.cond and query_ref.cond.col in record.keys():
             if ON_STG8:
                 print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value,"COL:",query_ref.cond.col)
+                print(record)
+                LIMIT += 1
+                if LIMIT == 6:
+                    quit(1)
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
