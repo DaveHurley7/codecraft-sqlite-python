@@ -7,8 +7,6 @@ from dataclasses import dataclass
 
 database_file_path = sys.argv[1]
 command = sys.argv[2]
-ON_STG8 = False
-LIMIT = 0
 
 class PageType:
     InteriorIndex = 0x02
@@ -103,13 +101,6 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
-            if ON_STG8:
-                print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value,"COL:",query_ref.cond.col)
-                print(record)
-                global LIMIT
-                LIMIT += 1
-                if LIMIT == 6:
-                    quit(1)
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
@@ -123,14 +114,15 @@ def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
     db_file.seek(pg_num + (12 if page_type&8 == 0 else 8))
     cell_ptrs = [read_int(db_file,2) for _ in range(cell_amt)]
     if page_type == PageType.InteriorTable:
-        global ON_STG8
-        ON_STG8 = True
+        #global ON_STG8
+        #ON_STG8 = True
         records = []
         for c_ptr in cell_ptrs:
             db_file.seek(pg_num+c_ptr)
             page_num = read_int(db_file,4)
             key = read_varint(db_file)
             records.extend(travel_pages((page_num-1)*pgsz,pgsz,db_file,tdesc,query_ref))
+        print(records)
         return records
     elif page_type == PageType.LeafTable:
         return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
