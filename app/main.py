@@ -106,6 +106,7 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
             if ON_STG8:
                 print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value,"COL:",query_ref.cond.col)
                 print(record)
+                global LIMIT
                 LIMIT += 1
                 if LIMIT == 6:
                     quit(1)
