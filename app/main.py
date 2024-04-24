@@ -85,7 +85,7 @@ def parse_cell(c_ptr,file):
     record = []
     for srl_type in serial_types:
         record.append(parse_record_body(srl_type,file))
-    return record
+    return record, row_id
 
 def get_table_info(cell_ptrs,dbfile,tbl_name):
     for cell_ptr in cell_ptrs:
@@ -96,10 +96,13 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
 def get_records(start_offset,cells,db_file,tdesc,query_ref):
     records = []
     for c_ptr in cells:
-        cell = parse_cell(start_offset+c_ptr,db_file)
+        cell, row_id = parse_cell(start_offset+c_ptr,db_file)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
+            if col_name == "id":
+                if not col_value:
+                    col_value = row_id
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
