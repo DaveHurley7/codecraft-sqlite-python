@@ -102,11 +102,11 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
+            if ON_STG8:
+                print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value)
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
-    if ON_STG8:
-        print("RECORDS:",hex(start_offset),[hex(c) for c in cells])
     return records
 
 def travel_pages(pg_num,pgsz,db_file,tdesc,query_ref):
