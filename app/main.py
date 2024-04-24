@@ -102,7 +102,6 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         for col_name, col_value in zip(tdesc.col_names,cell):
             record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
-            print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value)
             if ON_STG8:
                 print("VALUE IN RECORD:",record[query_ref.cond.col],"QUERIED VALUE",query_ref.cond.value)
             if query_ref.cond.comp(record[query_ref.cond.col]):
