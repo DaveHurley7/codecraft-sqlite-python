@@ -106,6 +106,9 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
                     print("COL ID EXISTS")
                 if not col_value:
                     col_value = row_id
+            else:
+                if ON_STG8:
+                    print("NO COL ID")
         if query_ref.cond and query_ref.cond.col in record.keys():
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
