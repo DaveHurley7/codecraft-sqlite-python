@@ -74,12 +74,12 @@ def parse_cellLT(offset,page):
     offset += bytes_read
     row_id, bytes_read = read_varint(page,offset)
     offset += bytes_read
-    record_hdr_sz, bytes_read = read_varint(file)
+    record_hdr_sz, bytes_read = read_varint(page,offset)
     record_body_start = offset+record_hdr_sz
     offset += bytes_read
     serial_types = []
     while offset < record_body_start:
-        srl, bytes_read = read_varint(file)
+        srl, bytes_read = read_varint(page,offset)
         serial_types.append(srl)
         offset += bytes_read
     record = []
