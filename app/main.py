@@ -156,7 +156,7 @@ def travel_tables(pg_num,db_file,pg_sz,tdesc,query_ref):
         pages, keys = parse_ITCells(page,cell_ptrs)
         records = []
         for pg in pages:
-            records.extend(travel_pages(pg,db_file,,pg_sz,tdesc,query_ref))
+            records.extend(travel_pages(pg,db_file,pg_sz,tdesc,query_ref))
     elif page_type == PageType.LeafTable:
         return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
     
@@ -306,16 +306,17 @@ elif command.lower().startswith("select"):
             for rid in rowids:
                 print(rid)
         else:     
-        page_offset = (tbl_info["rootpage"]-1)*page_size
-        records = travel_pages(page_offset,page_size,database_file,tbl_info["desc"],p_query)
-        if p_query.count_cols:
-            print(len(records))
-        else:
-            col_idxs = []
-            for col in p_query.col_names:
-                col_idxs.append(tbl_info["desc"].col_names.index(col))
-            results = [[r[col_idx] for col_idx in col_idxs] for r in records if r]
-            for res in results:
-                print(*res,sep="|")
+            page_num = db_objs["tables"][p_query.table]["pg_num"]
+            tbl_info = db_objs["tables"][p_query.table]["query"]
+            records = travel_pages(page_num,database_file,page_size,tbl_info,p_query)
+            if p_query.count_cols:
+                print(len(records))
+            else:
+                col_idxs = []
+                for col in p_query.col_names:
+                    col_idxs.append(tbl_info["desc"].col_names.index(col))
+                results = [[r[col_idx] for col_idx in col_idxs] for r in records if r]
+                for res in results:
+                    print(*res,sep="|")
 else:
     print(f"Invalid command: {command}")
