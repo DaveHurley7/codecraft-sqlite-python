@@ -1,12 +1,7 @@
-keywords = ["select","from","create","table"]
+keywords = ["select","from","create","table","index"]
 
-class KeywordUsedAsColumnNameError(Exception):
-    def __init__(self,msg="A keyword cannot be used as a column name"):
-        self.message = msg
-        super().__init__(self.message)
-        
-class KeywordUsedAsTableNameError(Exception):
-    def __init__(self,msg="A keyword cannot be used as a table name"):
+class KeywordUsedAsIdentifierNameError(Exception):
+    def __init__(self,msg="A keyword cannot be used as a name for columns, tables or indexes"):
         self.message = msg
         super().__init__(self.message)
         
@@ -26,9 +21,10 @@ class InvalidQuerySyntaxError(Exception):
         super().__init__(self.message)
         
 class SQLAction:
-    NONE   = 0
-    SELECT = 1
-    CREATE = 2
+    NONE         = 0
+    SELECT       = 1
+    CREATE_TABLE = 2
+    CREATE_INDEX = 3
     
 class TokenStream:
     def __init__(self,tokens):
@@ -108,6 +104,7 @@ class ParsedQuery:
     col_dtypes = []
     table = None
     cond = None
+    index = None
     
     def has_action(self):
         return self.action != SQLAction.NONE
@@ -132,40 +129,60 @@ def parse(sql_str):
                     if col_name.endswith(","):
                         col_names.append(col_name[:-1])
                         if col_names[-1] in keywords:
-                            raise KeywordUsedAsColumnNameError
+                            raise KeywordUsedAsIdentifierNameError
                         col_name = token_stream.get_next()
                     else:
                         if col_name in keywords:
-                            raise KeywordUsedAsColumnNameError
+                            raise KeywordUsedAsIdentifierNameError
                         col_names.append(col_name)
                         break
                 p_query.col_names = col_names
         elif "from" == token:
             tbl_name = token_stream.get_next()
             if tbl_name in keywords:
-                raise KeywordUsedAsTableNameError
+                raise KeywordUsedAsIdentifierNameError
             p_query.table = tbl_name
         elif "create" == token:
             if p_query.has_action():
                 raise QueryActionAlreadySetError
-            p_query.action = SQLAction.CREATE
-            if token_stream.get_next() != "table":
-                raise InvalidQuerySyntaxError("Create keyword must be followed by this keyword: table")
-            tbl_name = token_stream.get_next()
-            if tbl_name in keywords:
-                raise KeywordUsedAsTableNameError
-            if token_stream.get_next() != "(":
-                print("ERROR:",token)
-                raise InvalidQuerySyntaxError("Expected a '(' after the table name")
-            while token_stream.peek_next() != ")":
-                col_name = token_stream.get_next()
-                data_type = token_stream.get_next()
-                if token_stream.peek_next() != ")":
-                    token_stream.skip_unneeded_tokens()
-                if data_type.endswith(","):
-                    data_type = data_type[:-1]
-                p_query.col_names.append(col_name)
-                p_query.col_dtypes.append(data_type)
+            p_query.action = SQLAction.CREATE_TABLE
+            action = token_stream.get_next()
+            if action= "table":
+                tbl_name = token_stream.get_next()
+                if tbl_name in keywords:
+                    raise KeywordUsedAsIdentifierNameError
+                p_query.table = tbl_name
+                if token_stream.get_next() != "(":
+                    raise InvalidQuerySyntaxError("Expected a '(' after the table name")
+                while token_stream.peek_next() != ")":
+                    col_name = token_stream.get_next()
+                    data_type = token_stream.get_next()
+                    if token_stream.peek_next() != ")":
+                        token_stream.skip_unneeded_tokens()
+                    if data_type.endswith(","):
+                        data_type = data_type[:-1]
+                    p_query.col_names.append(col_name)
+                    p_query.col_dtypes.append(data_type)
+            elif action == "index":
+                idx_name = token_stream.get_next()
+                if idx_name in keywords:
+                    raise KeywordUsedAsIdentifierNameError
+                p_query.index = idx_name
+                if token_stream.get_next() != "on":
+                    raise InvalidQuerySyntaxError("Expected 'on' after the index name")
+                tbl_name = token_stream.get_next()
+                if tbl_name in keywords:
+                    raise KeywordUsedAsIdentifierNameError
+                p_query.table = tbl_name
+                if token_stream.get_next() != "(":
+                    raise InvalidQuerySyntaxError("Expected a '(' after the table name")
+                while token_stream.peek_next() != ")":
+                    col_name = token_stream.get_next()
+                    if col_name.endswith(","):
+                        col_name = col_name[:-1]
+                    p_query.col_names.append(col_name)
+            else:
+                raise InvalidQuerySyntaxError("Create keyword must be followed by either table or index") 
         elif "where" == token:
             col_name = token_stream.get_next()
             cmp_op = token_stream.get_next()
