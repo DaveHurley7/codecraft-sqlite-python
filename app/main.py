@@ -304,7 +304,7 @@ elif command.lower().startswith("select"):
             rowids.sort()
             #records = [get_record_by_id(rid) for rid in rowids]
             for rid in rowids:
-                print(rid)
+                print("Rowid:",rid)
         else:     
             page_num = db_objs["tables"][p_query.table]["pg_num"]
             tbl_info = db_objs["tables"][p_query.table]["query"]
