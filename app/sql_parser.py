@@ -147,7 +147,7 @@ def parse(sql_str):
                 raise QueryActionAlreadySetError
             p_query.action = SQLAction.CREATE_TABLE
             action = token_stream.get_next()
-            if action= "table":
+            if action == "table":
                 tbl_name = token_stream.get_next()
                 if tbl_name in keywords:
                     raise KeywordUsedAsIdentifierNameError
