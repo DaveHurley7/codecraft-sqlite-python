@@ -300,6 +300,7 @@ elif command.lower().startswith("select"):
         req_tbl_query = db_objs["tables"][p_query.table]["query"]
         records = []
         if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
+            print("Have query and an index")
             rowids = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
             rowids.sort()
             #records = [get_record_by_id(rid) for rid in rowids]
