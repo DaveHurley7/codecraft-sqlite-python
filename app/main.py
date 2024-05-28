@@ -296,17 +296,18 @@ elif command.lower().startswith("select"):
         cell_ptrs = [read_int(page,100+i,2) for i in range(8,8+(cell_amt<<1),2)]
         
         db_objs = get_db_schema(page,cell_ptrs)
+        print("MASTER SCHEMA RECEIVED")
         del page
         req_tbl_query = db_objs["tables"][p_query.table]["query"]
         records = []
-        print("TESTING")
-        if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
-            print("Have query and an index")
-            rowids = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
-            rowids.sort()
-            #records = [get_record_by_id(rid) for rid in rowids]
-            for rid in rowids:
-                print("Rowid:",rid)
+        if p_query.cond:
+            if (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
+                print("Have query and an index")
+                rowids = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
+                rowids.sort()
+                #records = [get_record_by_id(rid) for rid in rowids]
+                for rid in rowids:
+                    print("Rowid:",rid)
         else:     
             print("No query or index")
             page_num = db_objs["tables"][p_query.table]["pg_num"]
