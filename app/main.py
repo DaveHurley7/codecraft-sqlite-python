@@ -311,8 +311,7 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
         del page
         idx = 0
         key_amt = len(keys)
-        print(keys)
-        while idx < key_amt and col_val > keys[idx][0]:
+        while idx < key_amt and (not keys[idx][0] or col_val > keys[idx][0]):
             idx += 1
         while searching and idx < key_amt and col_val <= keys[idx][0]:
             more_rowids, searching, search_started = travel_idxs(qry_cond,pages[idx],db_file,pg_sz)
