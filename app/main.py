@@ -391,8 +391,6 @@ elif command.lower().startswith("select"):
             for rcd in records:
                 print(*rcd,sep="|")
         else:     
-            print("No query or index")
-            quit()
             page_num = db_objs["tables"][p_query.table]["pg_num"]
             tbl_info = db_objs["tables"][p_query.table]["query"]
             records = travel_tables(page_num,database_file,page_size,tbl_info,p_query)
