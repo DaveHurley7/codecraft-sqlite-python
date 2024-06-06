@@ -15,6 +15,22 @@ class PageType:
     LeafIndex = 0x0a
     LeafTable = 0x0d
     
+class CellGroup:
+    def __init__(self,cells):
+        self._cells = cells
+        
+    def __len__(self):
+        return len(self._cells)
+        
+    def __getitem__(self,sl_info):
+        if isinstance(sl_info,slice):
+            return CellGroup(self._cells[sl_info.start:sl_info.stop])
+        else:
+            return self._cells[sl_info]
+        
+    def __iter__(self):
+        return iter(self._cells)
+    
 class UnknownSerialTypeError(Exception):
     def __init__(self,srl_type,msg="Invalid serial type found:"):
         self.message = msg
@@ -48,14 +64,14 @@ def read_varint(buffer,offset):
         byte = buffer[offset+bidx]
         val = (val << 8) | byte
         bidx += 1
-    return val, bidx
+    return val, bidx+1
 
 def parse_record_body(srl_type,page,offset):
     if not srl_type:
         return None, 0
     elif srl_type > 0 and srl_type < 7:
         srl_len = SRL_TYPE_INT_LENS[srl_type-1]
-        return read_int(page,offset,srl_len), srl_Len
+        return read_int(page,offset,srl_len), srl_len
     elif srl_type == 7:
         return struct.unpack(">f",page[offset:offset+8]), 8
     elif srl_type == 8 or srl_type == 9:
@@ -69,7 +85,7 @@ def parse_record_body(srl_type,page,offset):
     else:
         raise UnknownSerialTypeError(srl_type)
     
-def parse_cellLT(offset,page):
+def parse_TCell(offset,page):
     payload_size, bytes_read = read_varint(page,offset)
     offset += bytes_read
     row_id, bytes_read = read_varint(page,offset)
@@ -92,12 +108,12 @@ def parse_cellLT(offset,page):
 def parse_ICell(offset,page):
     payload_size, bytes_read = read_varint(page,offset)
     offset += bytes_read
-    record_hdr_sz, bytes_read = read_varint(file)
+    record_hdr_sz, bytes_read = read_varint(page,offset)
     record_body_start = offset+record_hdr_sz
     offset += bytes_read
     serial_types = []
     while offset < record_body_start:
-        srl, bytes_read = read_varint(file)
+        srl, bytes_read = read_varint(page,offset)
         serial_types.append(srl)
         offset += bytes_read
     record = []
@@ -111,12 +127,12 @@ def get_table_info(cell_ptrs,dbfile,tbl_name):
     for cell_ptr in cell_ptrs:
         record, row_id = parse_cell(cell_ptr,dbfile)
         if record[1] == tbl_name:
-            return {"rootpage":record[3],"desc":sp.parse(record[4].lower().replace("(","( ").replace(")"," )").replace(",",", "))}
+            return {"rootpage":record[3],"desc":sp.parse(record[4])}
         
-def get_records(start_offset,cells,db_file,tdesc,query_ref):
+def get_records(page,cells,tdesc,query_ref):
     records = []
     for c_ptr in cells:
-        cell, row_id = parse_cell(start_offset+c_ptr,db_file)
+        cell, row_id = parse_TCell(c_ptr,page)
         record = {}
         for col_name, col_value in zip(tdesc.col_names,cell):
             if col_name == "id":
@@ -129,11 +145,64 @@ def get_records(start_offset,cells,db_file,tdesc,query_ref):
         records.append(list(record.values()))
     return records
 
+def parseTCellheader(offset,page):
+    payload_size, bytes_read = read_varint(page,offset)
+    offset += bytes_read
+    row_id, bytes_read = read_varint(page,offset)
+    offset += bytes_read
+    return row_id, offset
+
+def parseTCellbody(offset,page):
+    record_hdr_sz, bytes_read = read_varint(page,offset)
+    record_body_start = offset+record_hdr_sz
+    offset += bytes_read
+    serial_types = []
+    while offset < record_body_start:
+        srl, bytes_read = read_varint(page,offset)
+        serial_types.append(srl)
+        offset += bytes_read
+    record = []
+    for srl_type in serial_types:
+        value, val_len = parse_record_body(srl_type,page,offset)
+        record.append(value)
+        offset += val_len
+    return record
+
+def binary_search_for_cell(c_id,cells,start,end,page):
+    midcell = (start+end)>>1
+    cell_id, record_start = parseTCellheader(cells[midcell],page)
+    if c_id == cell_id:
+        return record_start
+    if start == end:
+        return 0
+    if c_id < cell_id:
+        return binary_search_for_cell(c_id,cells,start,midcell-1,page)
+    if c_id > cell_id:
+        return binary_search_for_cell(c_id,cells,midcell+1,end,page)
+
+def get_record_by_id(c_id,page,cells,tdesc,query_ref):
+    cell_record_offset = binary_search_for_cell(c_id,cells,0,len(cells)-1,page)
+    if cell_record_offset:
+        cell = parseTCellbody(cell_record_offset,page)
+        record = []
+        for col in query_ref.col_names:
+            data = cell[tdesc.col_names.index(col)]
+            if col == "id" and not data:
+                data = c_id
+            record.append(data)
+        return record
+    else:
+        return []
+
 def parse_interior_header(page):
     cell_amt = read_int(page,3,2)
     last_pg_num = read_int(page,8,4)
     cell_ptrs = [read_int(page,i,2) for i in range(12,12+(cell_amt<<1),2)]
     return cell_ptrs, last_pg_num
+
+def parse_leaf_header(page):
+    cell_amt = read_int(page,3,2)
+    return [read_int(page,i,2) for i in range(8,8+(cell_amt<<1),2)]
 
 def parse_TKCell(offset,page):
     rowid, bytes_read = read_varint(page,offset)
@@ -149,48 +218,63 @@ def parse_ITCells(page,cell_ptrs):
         keys.append(cell)
     return pages, keys
 
-def travel_tables(pg_num,db_file,pg_sz,tdesc,query_ref):
+def travel_tables(pg_num,db_file,pg_sz,tdesc,query_ref,c_sel=None):
     page = read_page(db_file,pg_num,pg_sz)
     if page[0] == PageType.InteriorTable:
         cell_ptrs, last_pg_num = parse_interior_header(page)
         pages, keys = parse_ITCells(page,cell_ptrs)
         records = []
-        for pg in pages:
-            records.extend(travel_pages(pg,db_file,pg_sz,tdesc,query_ref))
-    elif page_type == PageType.LeafTable:
-        return get_records(pg_num,cell_ptrs,db_file,tdesc,query_ref)
+        if c_sel:
+            sel_end = 0
+            sel_start = sel_end
+            sel_len = len(c_sel)
+            for idx, key in enumerate(keys):
+                if sel_end >= sel_len:
+                    break
+                if key <= c_sel[sel_end]:
+                    continue
+                while sel_end < sel_len and c_sel[sel_end] <= key:
+                    sel_end += 1
+                records.extend(travel_tables(pages[idx],db_file,pg_sz,tdesc,query_ref,c_sel[sel_start:sel_end]))
+                sel_start = sel_end
+            if sel_end < sel_len:
+                records.extend(travel_tables(last_pg_num,db_file,pg_sz,tdesc,query_ref,c_sel[sel_start:]))
+        else:
+            for pg in pages:
+                records.extend(travel_tables(pg,db_file,pg_sz,tdesc,query_ref))
+        return records
+    elif page[0] == PageType.LeafTable:
+        cell_ptrs = parse_leaf_header(page)
+        if c_sel:
+            return [get_record_by_id(cs,page,cell_ptrs,tdesc,query_ref) for cs in c_sel]
+        else:
+            return get_records(page,cell_ptrs,tdesc,query_ref)
     
 def get_db_schema(page,cell_ptrs):
     db_objs = {"tables":{},"indexes":{}}
     for cptr in cell_ptrs:
-        cell = parse_cellLT(cptr,page)
+        cell = parse_TCell(cptr,page)[0]
         if cell[1].startswith("sqlite_"):
             continue
         obj = {cell[1]:{"pg_num":cell[3],"query":sp.parse(cell[4])}}
         if cell[0] == "table":
-            db_objs["tables"].append(obj)
+            db_objs["tables"].update(obj)
         elif cell[0] == "index":
-            obj["table"] = cell[2]
-            db_objs["indexes"].append(obj)
+            obj[cell[1]]["table"] = cell[2]
+            db_objs["indexes"].update(obj)
         else:
             print("Invalid database object",cell[0])
     return db_objs
 
-def get_valid_index(indexes,table,col):
-    for index in indexes:
-        if index.table != table:
+def get_valid_index(indexes,table_name,col):
+    for idxkey, index in indexes.items():
+        if index["table"] != table_name:
             continue
-        if len(index.cols) != 1:
+        if len(index["query"].col_names) != 1:
             continue
-        if index.cols[0] != col:
-            continue
-        if col in table.cols:
+        if index["query"].col_names[0] == col:
             return index
     return None
-
-def parse_LIHeader(page):
-    cell_amt = read_int(page,3,2)
-    return [read_int(page,i,2) for i in range(8,8+(cell_amt<<1),2)]
 
 def parse_IICells(page,cell_ptrs):
     pages = []
@@ -203,14 +287,14 @@ def parse_IICells(page,cell_ptrs):
     return pages, keys
 
 def binary_search_first(cell_ptrs,start,end,page,val):
-    mid_cell = (start+end)>>2
+    mid_cell = (start+end)>>1
     cell = parse_ICell(cell_ptrs[mid_cell],page)
     if start == end:
         if cell[0] == val:
             return mid_cell, cell
         else:
             return None, None
-    if val <= cell:
+    if val <= cell[0]:
         return binary_search_first(cell_ptrs,start,mid_cell,page,val)
     else:
         return binary_search_first(cell_ptrs,mid_cell+1,end,page,val)
@@ -231,27 +315,27 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
             idx += 1
         while searching and idx < key_amt and col_val <= keys[idx][0]:
             more_rowids, searching, search_started = travel_idxs(qry_cond,pages[idx],db_file,pg_sz)
-            idx += 1
             rowids.extend(more_rowids)
             if searching:
                 if col_val == keys[idx][0]:
                     rowids.append(keys[idx][1])
                 else:
                     searching = False
+            idx += 1
         if searching:
             travel_idxs(qry_cond,last_pg_num,db_file,pg_sz)
-        return rowids, searching, search_started
     elif page[0] == PageType.LeafIndex:
-        cell_ptrs = parse_LIHeader(page)
+        cell_ptrs = parse_leaf_header(page)
         if search_started:
             cptr = cell_ptrs[0]
             first_idx = 0
             cell = parse_ICell(cptr,page)
         else:
             first_idx, cell = binary_search_first(cell_ptrs,0,len(cell_ptrs)-1,page,col_val)
-        if not first_idx:
+            cptr = cell_ptrs[first_idx]
+        if first_idx == None:
             print("Error find value")
-            return []
+            return [], searching, search_started
         else:
             search_started = True
         rowids.append(cell[1])
@@ -266,7 +350,7 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
                 searching = False
                 break
         del page
-    return rowids
+    return rowids, searching, search_started
             
 if command == ".dbinfo":
     with open(database_file_path, "rb") as database_file:
@@ -286,7 +370,7 @@ elif command == ".tables":
         tbl_names = list(db_objs["tables"].keys())
         print(*tbl_names)
 elif command.lower().startswith("select"):
-    p_query = sp.parse(command.lower())
+    p_query = sp.parse(command)
     with open(database_file_path, "rb") as database_file:
         database_file.seek(16)
         page_size = int.from_bytes(database_file.read(2))
@@ -294,31 +378,30 @@ elif command.lower().startswith("select"):
         
         cell_amt = read_int(page,103,2)
         cell_ptrs = [read_int(page,100+i,2) for i in range(8,8+(cell_amt<<1),2)]
-        
         db_objs = get_db_schema(page,cell_ptrs)
-        print("MASTER SCHEMA RECEIVED")
+        
         del page
-        req_tbl_query = db_objs["tables"][p_query.table]["query"]
         records = []
-        if p_query.cond:
-            if (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
-                print("Have query and an index")
-                rowids = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
-                rowids.sort()
-                #records = [get_record_by_id(rid) for rid in rowids]
-                for rid in rowids:
-                    print("Rowid:",rid)
-        else:     
-            print("No query or index")
+        if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
+            rowids, _, _1 = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
+            rowids.sort()
             page_num = db_objs["tables"][p_query.table]["pg_num"]
             tbl_info = db_objs["tables"][p_query.table]["query"]
-            records = travel_pages(page_num,database_file,page_size,tbl_info,p_query)
+            records = travel_tables(page_num,database_file,page_size,tbl_info,p_query,CellGroup(rowids))
+            for rcd in records:
+                print(*rcd,sep="|")
+        else:     
+            print("No query or index")
+            quit()
+            page_num = db_objs["tables"][p_query.table]["pg_num"]
+            tbl_info = db_objs["tables"][p_query.table]["query"]
+            records = travel_tables(page_num,database_file,page_size,tbl_info,p_query)
             if p_query.count_cols:
                 print(len(records))
             else:
                 col_idxs = []
                 for col in p_query.col_names:
-                    col_idxs.append(tbl_info["desc"].col_names.index(col))
+                    col_idxs.append(tbl_info.col_names.index(col))
                 results = [[r[col_idx] for col_idx in col_idxs] for r in records if r]
                 for res in results:
                     print(*res,sep="|")

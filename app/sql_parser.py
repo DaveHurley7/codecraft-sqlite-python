@@ -43,12 +43,14 @@ class TokenStream:
         return False
     
     def peek_next(self):
+        if self.idx+1 >= len(self.stream):
+            raise NoTokenFoundError
         return self.stream[self.idx+1]
     
     def skip_unneeded_tokens(self):
         if not self.has_next():
             raise NoTokenFoundError
-        while self.stream[self.idx+1] in ["primary","key","key,","autoincrement","autoincrement,","not","null","null,"]:
+        while self.stream[self.idx+1] in ["primary","key","autoincrement","not","null",","]:
             self.idx += 1
             
 class WhereCmp:
@@ -97,20 +99,21 @@ class QueryCond:
             return self.value >= val
 
 class ParsedQuery:
-    action = SQLAction.NONE
-    all_cols = False
-    count_cols = False
-    col_names = []
-    col_dtypes = []
-    table = None
-    cond = None
-    index = None
+    def __init__(self):
+        self.action = SQLAction.NONE
+        self.all_cols = False
+        self.count_cols = False
+        self.col_names = []
+        self.col_dtypes = []
+        self.table = None
+        self.cond = None
+        self.index = None
     
     def has_action(self):
         return self.action != SQLAction.NONE
 
 def parse(sql_str):
-    token_stream = TokenStream(sql_str.split())
+    token_stream = TokenStream(sql_str.lower().replace("(","( ").replace(")"," )").replace(","," , ").split())
     p_query = ParsedQuery()
     while token_stream.has_next():
         token = token_stream.get_next()
@@ -126,15 +129,13 @@ def parse(sql_str):
             else:
                 col_names = []
                 while True:
-                    if col_name.endswith(","):
-                        col_names.append(col_name[:-1])
-                        if col_names[-1] in keywords:
-                            raise KeywordUsedAsIdentifierNameError
+                    if col_name in keywords:
+                        raise KeywordUsedAsIdentifierNameError
+                    col_names.append(col_name)
+                    if token_stream.peek_next() == ",":
+                        token_stream.get_next()
                         col_name = token_stream.get_next()
                     else:
-                        if col_name in keywords:
-                            raise KeywordUsedAsIdentifierNameError
-                        col_names.append(col_name)
                         break
                 p_query.col_names = col_names
         elif "from" == token:
@@ -159,11 +160,11 @@ def parse(sql_str):
                     data_type = token_stream.get_next()
                     if token_stream.peek_next() != ")":
                         token_stream.skip_unneeded_tokens()
-                    if data_type.endswith(","):
-                        data_type = data_type[:-1]
                     p_query.col_names.append(col_name)
                     p_query.col_dtypes.append(data_type)
             elif action == "index":
+                if p_query.col_names:
+                    print("HAS COLUMNS:",p_query.col_names)
                 idx_name = token_stream.get_next()
                 if idx_name in keywords:
                     raise KeywordUsedAsIdentifierNameError
@@ -178,8 +179,6 @@ def parse(sql_str):
                     raise InvalidQuerySyntaxError("Expected a '(' after the table name")
                 while token_stream.peek_next() != ")":
                     col_name = token_stream.get_next()
-                    if col_name.endswith(","):
-                        col_name = col_name[:-1]
                     p_query.col_names.append(col_name)
             else:
                 raise InvalidQuerySyntaxError("Create keyword must be followed by either table or index") 
@@ -189,12 +188,11 @@ def parse(sql_str):
             value = token_stream.get_next()
             if value.startswith("'"):
                 if value.endswith("'"):
-                    value = value[1:-1].title()
+                    value = value[1:-1] #.title()
                 else:
                     while not value.endswith("'"):
                         value += " " + token_stream.get_next()
-                    value = value[1:-1].title()
+                    #value = value[1:-1].title()
             p_query.cond = QueryCond(col_name,cmp_op,value)
-            #print("CONDITION:",p_query.cond)
     return p_query
             
