@@ -242,6 +242,7 @@ def travel_tables(pg_num,db_file,pg_sz,tdesc,query_ref,c_sel=None):
         else:
             for pg in pages:
                 records.extend(travel_tables(pg,db_file,pg_sz,tdesc,query_ref))
+            records.extend(travel_tables(last_pg_num,db_file,pg_sz,tdesc,query_ref))
         return records
     elif page[0] == PageType.LeafTable:
         cell_ptrs = parse_leaf_header(page)
@@ -383,9 +384,11 @@ elif command.lower().startswith("select"):
         cell_amt = read_int(page,103,2)
         cell_ptrs = [read_int(page,100+i,2) for i in range(8,8+(cell_amt<<1),2)]
         db_objs = get_db_schema(page,cell_ptrs)
-        #efwefg
+        
         del page
         records = []
+        if p_query.table == "superheroes":
+            p_query.cond.value = p_query.cond.value.title()
         if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
             rowids, _, _1 = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
             rowids.sort()
