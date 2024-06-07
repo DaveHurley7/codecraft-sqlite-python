@@ -389,7 +389,7 @@ elif command.lower().startswith("select"):
         del page
         records = []
         if p_query.table == "superheroes":
-            print("TABLE HEROES")
+            print("TABLE SUPERHEROES")
             p_query.cond.value = p_query.cond.value.title()
             print("QUERY COND:",p_query.cond.value)
         if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
