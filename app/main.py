@@ -383,7 +383,7 @@ elif command.lower().startswith("select"):
         cell_amt = read_int(page,103,2)
         cell_ptrs = [read_int(page,100+i,2) for i in range(8,8+(cell_amt<<1),2)]
         db_objs = get_db_schema(page,cell_ptrs)
-        
+        #efwefg
         del page
         records = []
         if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
