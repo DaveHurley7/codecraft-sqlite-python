@@ -140,6 +140,7 @@ def get_records(page,cells,tdesc,query_ref):
             else:
                 record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
+            print("TESTING")
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
@@ -242,9 +243,7 @@ def travel_tables(pg_num,db_file,pg_sz,tdesc,query_ref,c_sel=None):
         else:
             for pg in pages:
                 records.extend(travel_tables(pg,db_file,pg_sz,tdesc,query_ref))
-                print("Checked page")
             records.extend(travel_tables(last_pg_num,db_file,pg_sz,tdesc,query_ref))
-            print("Checked page")
             print(records)
         return records
     elif page[0] == PageType.LeafTable:
