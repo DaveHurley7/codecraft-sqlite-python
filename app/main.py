@@ -140,7 +140,7 @@ def get_records(page,cells,tdesc,query_ref):
             else:
                 record[col_name] = col_value
         if query_ref.cond and query_ref.cond.col in record.keys():
-            print("TESTING")
+            print("TESTING:",cell)
             if query_ref.cond.comp(record[query_ref.cond.col]):
                 continue
         records.append(list(record.values()))
