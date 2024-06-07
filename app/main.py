@@ -243,7 +243,6 @@ def travel_tables(pg_num,db_file,pg_sz,tdesc,query_ref,c_sel=None):
             for pg in pages:
                 records.extend(travel_tables(pg,db_file,pg_sz,tdesc,query_ref))
             records.extend(travel_tables(last_pg_num,db_file,pg_sz,tdesc,query_ref))
-            print(records)
         return records
     elif page[0] == PageType.LeafTable:
         cell_ptrs = parse_leaf_header(page)
