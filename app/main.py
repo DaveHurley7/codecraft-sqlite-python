@@ -372,6 +372,7 @@ elif command == ".tables":
         tbl_names = list(db_objs["tables"].keys())
         print(*tbl_names)
 elif command.lower().startswith("select"):
+    print("RECUR LIMIT:",sys.getrecursionlimit())
     p_query = sp.parse(command)
     with open(database_file_path, "rb") as database_file:
         database_file.seek(16)
