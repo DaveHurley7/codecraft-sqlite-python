@@ -334,6 +334,8 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
             cell = parse_ICell(cptr,page)
         else:
             first_idx, cell = binary_search_first(cell_ptrs,0,len(cell_ptrs)-1,page,col_val)
+            if first_idx == None:
+                return [], searching, search_started
             cptr = cell_ptrs[first_idx]
         if first_idx == None:
             print("Error find value")
