@@ -294,6 +294,8 @@ def binary_search_first(cell_ptrs,start,end,page,val):
             return mid_cell, cell
         else:
             return None, None
+    if not cell[0]:
+        return binary_search_first(cell_ptrs,mid_cell+1,end,page,val)
     if val <= cell[0]:
         return binary_search_first(cell_ptrs,start,mid_cell,page,val)
     else:
