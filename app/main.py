@@ -327,6 +327,7 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
             idx += 1
         if searching:
             travel_idxs(qry_cond,last_pg_num,db_file,pg_sz)
+        print("ROWIDS:",rowids,pg_num)
     elif page[0] == PageType.LeafIndex:
         cell_ptrs = parse_leaf_header(page)
         if search_started:

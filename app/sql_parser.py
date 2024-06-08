@@ -192,7 +192,7 @@ def parse(sql_str):
                 else:
                     while not value.endswith("'"):
                         value += " " + token_stream.get_next()
-                    #value = value[1:-1].title()
+                    value = value[1:-1] #.title()
             p_query.cond = QueryCond(col_name,cmp_op,value)
     return p_query
             
