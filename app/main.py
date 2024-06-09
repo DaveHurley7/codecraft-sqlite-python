@@ -302,7 +302,7 @@ def binary_search_first(cell_ptrs,page,val):
             end = mid_cell - 1
     cell = parse_ICell(cell_ptrs[start],page)
     if not cell[0] or cell[0] != val:
-        retun None, None
+        return None, None
     else:
         return mid_cell, cell
 
