@@ -297,9 +297,9 @@ def binary_search_first(cell_ptrs,page,val):
         mid_cell = (start+end)>>1
         cell = parse_ICell(cell_ptrs[mid_cell],page)
         if not cell[0] or val > cell[0]:
-            start =  mid_cell + 1
+            start = mid_cell + 1
         elif val <= cell[0]:
-            end = mid_cell - 1
+            end = mid_cell
     cell = parse_ICell(cell_ptrs[start],page)
     if not cell[0] or cell[0] != val:
         return None, None
