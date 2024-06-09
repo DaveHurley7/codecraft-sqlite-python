@@ -168,20 +168,23 @@ def parseTCellbody(offset,page):
         offset += val_len
     return record
 
-def binary_search_for_cell(c_id,cells,start,end,page):
-    midcell = (start+end)>>1
-    cell_id, record_start = parseTCellheader(cells[midcell],page)
-    if c_id == cell_id:
-        return record_start
-    if start == end:
-        return 0
-    if c_id < cell_id:
-        return binary_search_for_cell(c_id,cells,start,midcell-1,page)
-    if c_id > cell_id:
-        return binary_search_for_cell(c_id,cells,midcell+1,end,page)
+def binary_search_for_cell(c_id,cells,page):
+    start = 0
+    end = len(cells)-1
+    while start != end:
+        midcell = (start+end)>>1
+        cell_id, record_start = parseTCellheader(cells[midcell],page)
+        if c_id == cell_id:
+            return record_start
+        if c_id < cell_id:
+            end = midcell - 1
+        elif c_id > cell_id:
+            start = midcell + 1
+    cell_id, record_start = parseTCellheader(cells[start],page)
+    return record_start if c_id == cell_id else 0
 
 def get_record_by_id(c_id,page,cells,tdesc,query_ref):
-    cell_record_offset = binary_search_for_cell(c_id,cells,0,len(cells)-1,page)
+    cell_record_offset = binary_search_for_cell(c_id,cells,page)
     if cell_record_offset:
         cell = parseTCellbody(cell_record_offset,page)
         record = []
@@ -287,20 +290,21 @@ def parse_IICells(page,cell_ptrs):
         keys.append(cell)
     return pages, keys
 
-def binary_search_first(cell_ptrs,start,end,page,val):
-    mid_cell = (start+end)>>1
-    cell = parse_ICell(cell_ptrs[mid_cell],page)
-    if start == end:
-        if cell[0] == val:
-            return mid_cell, cell
-        else:
-            return None, None
-    if not cell[0]:
-        return binary_search_first(cell_ptrs,mid_cell+1,end,page,val)
-    if val <= cell[0]:
-        return binary_search_first(cell_ptrs,start,mid_cell,page,val)
+def binary_search_first(cell_ptrs,page,val):
+    start = 0
+    end = len(cell_ptrs)-1
+    while start != end:
+        mid_cell = (start+end)>>1
+        cell = parse_ICell(cell_ptrs[mid_cell],page)
+        if not cell[0] or val > cell[0]:
+            start =  mid_cell + 1
+        elif val <= cell[0]:
+            end = mid_cell - 1
+    cell = parse_ICell(cell_ptrs[start],page)
+    if not cell[0] or cell[0] != val:
+        retun None, None
     else:
-        return binary_search_first(cell_ptrs,mid_cell+1,end,page,val)
+        return mid_cell, cell
 
 def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
     rowids = []
@@ -334,7 +338,7 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
             first_idx = 0
             cell = parse_ICell(cptr,page)
         else:
-            first_idx, cell = binary_search_first(cell_ptrs,0,len(cell_ptrs)-1,page,col_val)
+            first_idx, cell = binary_search_first(cell_ptrs,page,col_val)
             if first_idx == None:
                 return [], searching, search_started
             cptr = cell_ptrs[first_idx]
