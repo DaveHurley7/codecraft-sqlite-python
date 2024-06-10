@@ -391,6 +391,8 @@ elif command.lower().startswith("select"):
         
         del page
         records = []
+        if p_query.table == "superheroes":
+            p_query.cond.value = p_query.cond.value.title()
         if p_query.cond and (index := get_valid_index(db_objs["indexes"],p_query.table,p_query.cond.col)):
             rowids, _, _1 = travel_idxs(p_query.cond,index["pg_num"],database_file,page_size)
             rowids.sort()
