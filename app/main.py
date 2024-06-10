@@ -304,7 +304,7 @@ def binary_search_first(cell_ptrs,page,val):
     if not cell[0] or cell[0] != val:
         return None, None
     else:
-        return mid_cell, cell
+        return start, cell
 
 def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
     rowids = []
@@ -342,7 +342,6 @@ def travel_idxs(qry_cond,pg_num,db_file,pg_sz):
             first_idx, cell = binary_search_first(cell_ptrs,page,col_val)
             if first_idx == None:
                 return [], searching, search_started
-            cptr = cell_ptrs[first_idx]
         if first_idx == None:
             print("Error find value")
             return [], searching, search_started
