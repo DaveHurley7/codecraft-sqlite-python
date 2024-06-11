@@ -30,7 +30,6 @@ class TokenStream:
     def __init__(self,tokens):
         self.idx = -1
         self.stream = tokens
-        print("TOKENS",self.stream)
         
     def get_next(self):
         self.idx += 1
