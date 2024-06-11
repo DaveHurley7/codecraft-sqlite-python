@@ -30,6 +30,7 @@ class TokenStream:
     def __init__(self,tokens):
         self.idx = -1
         self.stream = tokens
+        print("TOKENS",self.stream)
         
     def get_next(self):
         self.idx += 1
@@ -124,8 +125,13 @@ def parse(sql_str):
             col_name = token_stream.get_next()
             if col_name == "*":
                 p_query.all_cols = True
-            elif col_name == "count(*)":
-                p_query.count_cols = True
+            elif col_name == "count(":
+                sym = token_stream.get_next()
+                endpar = token_stream.get_next()
+                if sym == "*" and endpar == ")":
+                    p_query.count_cols = True
+                else:
+                    raise InvalidQuerySyntaxError
             else:
                 col_names = []
                 while True:
